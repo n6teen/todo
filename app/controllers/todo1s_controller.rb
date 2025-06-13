@@ -22,14 +22,13 @@ class Todo1sController < ApplicationController
   # POST /todo1s or /todo1s.json
   def create
     @todo1 = Todo1.new(todo1_params)
-
     respond_to do |format|
       if @todo1.save
-        format.html { redirect_to @todo1, notice: "Todo1 was successfully created." }
-        format.json { render :show, status: :created, location: @todo1 }
+        format.turbo_stream # Renders create.turbo_stream.erb
+        format.html { redirect_to todo1_url(@todo1), notice: "Todo was successfully created." }
       else
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("#{helpers.dom_id(@todo1)}_form", partial: "form", locals: { todo: @todo1 }) }
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @todo1.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -38,11 +37,10 @@ class Todo1sController < ApplicationController
   def update
     respond_to do |format|
       if @todo1.update(todo1_params)
-        format.html { redirect_to @todo1, notice: "Todo1 was successfully updated." }
-        format.json { render :show, status: :ok, location: @todo1 }
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("#{helpers.dom_id(@todo1)}", partial: "todo1", locals: { todo: @todo1 }) }
+        format.html { redirect_to root_path, notice: "Todo updated successfully." }
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @todo1.errors, status: :unprocessable_entity }
+        format.html { render :edit }
       end
     end
   end
@@ -50,10 +48,9 @@ class Todo1sController < ApplicationController
   # DELETE /todo1s/1 or /todo1s/1.json
   def destroy
     @todo1.destroy!
-
     respond_to do |format|
-      format.html { redirect_to todo1s_path, status: :see_other, notice: "Todo1 was successfully destroyed." }
-      format.json { head :no_content }
+      format.turbo_stream { render turbo_stream: turbo_stream.remove("#{helpers.dom_id(@todo1)}") }
+      format.html { redirect_to todo1s_path, status: :see_other, notice: "Todo was successfully destroyed." }
     end
   end
 
